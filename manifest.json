@@ -1,0 +1,13 @@
+{
+    "display_name": "TTS Escape Stop",
+    "loading_order": 9,
+    "js": "index.js",
+    "css": "style.css",
+    "author": "ace",
+    "version": "1.0.0",
+    "hooks": {
+        "activate": "onActivate",
+        "enable": "onEnable",
+        "disable": "onDisable"
+    }
+}
