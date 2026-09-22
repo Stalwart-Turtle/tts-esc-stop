@@ -14,7 +14,7 @@ Works with **any** TTS provider in SillyTavern (GSVI, OpenAI, Edge, ...). The ex
    ```
 2. Enable **TTS Escape Stop** in Settings → Manage Extensions and refresh the page.
 
-An on/off toggle (on by default) appears in the extension's settings section.
+The extension has no settings of its own — it does exactly one thing. If you don't want that, disable the extension in Manage Extensions.
 
 ## Notes
 

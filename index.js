@@ -4,32 +4,11 @@
 // It reuses SillyTavern's built-in TTS "stop" control (#ttsExtensionMenuItem),
 // so both the audio element and the internal TTS job queues are fully reset —
 // no stale queue state left behind that would kill future auto-TTS.
+//
+// This extension has no settings of its own: it does exactly one thing, and
+// users who don't want it can disable the whole extension in Manage Extensions.
 
-const MODULE_NAME = 'tts_escape_stop';
-
-const defaultSettings = Object.freeze({
-    enabled: true,
-});
-
-/**
- * Gets this extension's settings object, initializing it (and backfilling any
- * keys missing from an older saved version) if needed.
- */
-function getSettings() {
-    const { extensionSettings } = SillyTavern.getContext();
-
-    if (!extensionSettings[MODULE_NAME]) {
-        extensionSettings[MODULE_NAME] = structuredClone(defaultSettings);
-    }
-
-    for (const key of Object.keys(defaultSettings)) {
-        if (!Object.hasOwn(extensionSettings[MODULE_NAME], key)) {
-            extensionSettings[MODULE_NAME][key] = defaultSettings[key];
-        }
-    }
-
-    return extensionSettings[MODULE_NAME];
-}
+const MODULE_NAME = 'tts_esc_stop';
 
 /**
  * Escape handler. Only acts when TTS is actually playing or processing. When
@@ -45,10 +24,6 @@ function getSettings() {
  *    starting even before the icon has refreshed.
  */
 function onEscapeKeyDown(event) {
-    if (!getSettings().enabled) {
-        return;
-    }
-
     // Ignore key auto-repeat and IME composition (e.g. Japanese input).
     if (event.key !== 'Escape' || event.repeat || event.isComposing) {
         return;
@@ -97,51 +72,19 @@ function detachKeydownListener() {
     keydownListenerAttached = false;
 }
 
-/**
- * Renders the settings panel (settings.html) and wires its inputs to the
- * extension's settings. Idempotent — safe to call multiple times.
- */
-async function addSettingsUI() {
-    const { renderExtensionTemplateAsync, saveSettingsDebounced } = SillyTavern.getContext();
-    const settings = getSettings();
-
-    if ($('#tts_escape_stop_settings').length > 0) {
-        return;
-    }
-
-    // First argument must match this extension's folder name under
-    // scripts/extensions/third-party/.
-    const html = await renderExtensionTemplateAsync('third-party/tts-esc-stop', 'settings', settings);
-    $('#extensions_settings2').append(html);
-
-    $('#tts_escape_stop_enabled')
-        .prop('checked', settings.enabled)
-        .on('change', function () {
-            settings.enabled = $(this).prop('checked');
-            saveSettingsDebounced();
-        });
-}
-
-async function setup() {
-    getSettings();
-    await addSettingsUI();
-    attachKeydownListener();
-}
-
 // --- Lifecycle hooks (declared in manifest.json's "hooks" object) ---
 
 export async function onActivate() {
     // Fires during page load when the extension is enabled.
-    await setup();
+    attachKeydownListener();
     console.log(`[${MODULE_NAME}] Extension loaded.`);
 }
 
 export async function onEnable() {
     // Mid-session enable from Manage Extensions (module was not loaded at startup).
-    await setup();
+    attachKeydownListener();
 }
 
 export function onDisable() {
     detachKeydownListener();
-    $('#tts_escape_stop_settings').remove();
 }
